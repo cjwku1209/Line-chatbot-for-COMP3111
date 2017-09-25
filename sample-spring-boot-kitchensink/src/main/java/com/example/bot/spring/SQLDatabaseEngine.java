@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.net.URISyntaxException;
+import java.io.IOException;
 import java.net.URI;
 
 @Slf4j
@@ -12,7 +13,25 @@ public class SQLDatabaseEngine extends DatabaseEngine {
 	@Override
 	String search(String text) throws Exception {
 		//Write your code here
-		return null;
+		String result = null;
+		
+		try {
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement("SELECT keyword, response FROM responsetable where keyword like concat('%', ? ,'%')");
+			stmt.setString(1, text);
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next())
+				result=rs.getString(2);
+			rs.close();
+			stmt.close();
+			connection.close();
+		}
+		catch(Exception e) {
+			log.info("Exception while retrieving DB", e.toString());
+		}
+		if (result != null)
+			return result;
+		throw new Exception("NOT FOUND");
 	}
 	
 	
